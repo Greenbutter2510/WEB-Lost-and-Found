@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hệ thống Quản lý PTIT lost and found</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Boxicons -->
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <link rel="stylesheet" href="/static/css/styles.css">
+    <style>
+        .auth-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            width: 100%;
+        }
+
+        .auth-card {
+            width: 100%;
+            max-width: 400px;
+            padding: 2.5rem;
+            text-align: center;
+        }
+
+        .auth-card h2 {
+            margin-bottom: 2rem;
+        }
+
+        .auth-toggle {
+            margin-top: 1.5rem;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            cursor: pointer;
+        }
+
+        .auth-toggle span {
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* Verification Specific Styles */
+        .info-card {
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: var(--radius-md);
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+        }
+
+        .contact-info {
+            padding: 1rem;
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid var(--success);
+            border-radius: var(--radius-md);
+            margin-top: 1rem;
+            color: var(--success);
+        }
+    </style>
+</head>
+
+<body>
+    <div id="authScreen" class="auth-container">
+        <div class="auth-card glass-panel">
+            <div id="loginFormSection">
+                <h2>Đăng nhập vào PTIT lost and found</h2>
+                <form id="loginForm">
+                    <div class="input-group" style="margin-bottom: 1.5rem;">
+                        <input type="text" id="loginUser" placeholder="Tên đăng nhập" required>
+                    </div>
+                    <div class="input-group" style="margin-bottom: 2rem;">
+                        <input type="password" id="loginPass" placeholder="Mật khẩu" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="width: 100%">Đăng nhập</button>
+                    <p class="auth-toggle">Chưa có tài khoản? <span onclick="toggleAuth(false)">Đăng ký</span></p>
+                </form>
+            </div>
+            <div id="registerFormSection" class="hidden">
+                <h2>Tạo tài khoản</h2>
+                <form id="registerForm">
+                    <div class="input-group" style="margin-bottom: 1rem;">
+                        <input type="text" id="regUser" placeholder="Tên đăng nhập" required>
+                    </div>
+                    <div class="input-group" style="margin-bottom: 1rem;">
+                        <input type="password" id="regPass" placeholder="Mật khẩu" required>
+                    </div>
+                    <div class="input-group" style="margin-bottom: 1rem;">
+                        <input type="text" id="regName" placeholder="Họ và tên" required>
+                    </div>
+                    <div class="input-group" style="margin-bottom: 1rem;">
+                        <input type="text" id="regPhone" placeholder="Số điện thoại" required>
+                    </div>
+                    <div class="input-group" style="margin-bottom: 1.5rem;">
+                        <input type="text" id="regContact" placeholder="Liên hệ phụ (VD: FB, Zalo)">
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="width: 100%">Đăng ký</button>
+                    <p class="auth-toggle">Đã có tài khoản? <span onclick="toggleAuth(true)">Đăng nhập</span></p>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div id="mainApp" class="app-container hidden">
+        <aside class="sidebar">
+            <div class="brand">
+                <i class='bx bx-radar' style="color: white"></i>
+                <span style="color: white">PTIT lost and found</span>
+            </div>
+            <nav class="nav-menu">
+                <a href="#" class="active" id="navAll"><i class='bx bx-grid-alt'></i> Tất cả bài đăng</a>
+                <a href="#" id="navActivity"><i class='bx bx-history'></i> Lịch sử hoạt động</a>
+                <div
+                    style="margin-top: 2rem; padding: 0 16px; font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px;">
+                    Hành động</div>
+                <a href="#" id="openReportModalBtn"><i class='bx bx-plus-circle'></i> Đăng tin</a>
+                <a href="#" id="exportCsvBtn" class="action-btn"><i class='bx bx-export'></i> Xuất CSV</a>
+            </nav>
+            <div class="user-profile">
+                <div class="avatar"><i class='bx bx-user'></i></div>
+                <div class="user-info">
+                    <h5 id="displayName">Người dùng</h5>
+                    <p id="displayRole">Khách</p>
+                </div>
+                <div style="display: flex; gap: 5px;">
+                    <button id="openProfileModalBtn" class="btn btn-outline"
+                        style="padding: 5px; min-width: auto; border:none;" title="Hồ sơ của tôi"><i
+                            class='bx bx-cog'></i></button>
+                    <button onclick="logout()" class="btn btn-outline"
+                        style="padding: 5px; min-width: auto; border:none;" title="Đăng xuất"><i
+                            class='bx bx-log-out'></i></button>
+                </div>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <header class="top-header">
+                <div class="page-title">
+                    <h1 id="currentViewTitle">Tất cả bài đăng</h1>
+                    <p>Các món đồ được cộng đồng báo cáo đang chờ chủ nhân.</p>
+                </div>
+            </header>
+
+            <!-- Filters Section -->
+            <section class="filters-section glass-panel">
+                <form id="filterForm" class="filter-grid">
+                    <div class="input-group">
+                        <label>Tìm kiếm mô tả</label>
+                        <div class="input-wrapper">
+                            <i class='bx bx-search'></i>
+                            <input type="text" id="filterDesc" placeholder="VD: Ví, Chìa khóa...">
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <label>Mã số/Phòng</label>
+                        <input type="text" id="filterIdent" placeholder="Mã SV, Số phòng...">
+                    </div>
+                    <div class="input-group">
+                        <label>Trạng thái</label>
+                        <select id="filterStatus">
+                            <option value="">Tất cả trạng thái</option>
+                            <option value="lost">Mất</option>
+                            <option value="found">Nhặt được</option>
+                            <option value="verifying">Đang xác minh</option>
+                            <option value="completed">Đã hoàn thành</option>
+                            <option value="archived">Đã lưu trữ</option>
+                            <option value="cancel">Hủy</option>
+                        </select>
+                    </div>
+                    <div class="input-group" style="min-width: 320px; flex: 2;">
+                        <label>Ngày xảy ra (Từ - Đến)</label>
+                        <div class="date-range">
+                            <input type="date" id="filterDateFrom" style="padding: 8px; font-size: 0.85rem;">
+                            <span>-</span>
+                            <input type="date" id="filterDateTo" style="padding: 8px; font-size: 0.85rem;">
+                        </div>
+                    </div>
+                    <div class="filter-actions" style="margin-bottom: 5px;">
+                        <button type="submit" class="btn btn-secondary"><i class='bx bx-filter-alt'></i> Áp
+                            dụng</button>
+                        <button type="button" class="btn btn-outline" id="clearFiltersBtn">Xóa lọc</button>
+                    </div>
+                </form>
+            </section>
+
+            <section class="data-section">
+                <div class="items-grid" id="itemsContainer">
+                    <!-- Items will be injected here as cards -->
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Modals -->
+    <!-- Report Found Item Modal -->
+    <div class="modal overlay" id="reportModal">
+        <div class="modal-content glass-panel">
+            <div class="modal-header">
+                <h2><i class='bx bx-message-square-add'></i> Đăng tin (Mất/Nhặt được)</h2>
+                <button class="close-btn" onclick="closeModal('reportModal')"><i class='bx bx-x'></i></button>
+            </div>
+            <form id="reportForm">
+                <div class="form-grid">
+                    <div class="input-group">
+                        <label>Tiêu đề món đồ *</label>
+                        <input type="text" name="title" required placeholder="VD: iPhone 13, Ví da">
+                    </div>
+                    <div class="input-group">
+                        <label>Loại (Trạng thái) *</label>
+                        <select name="status" required>
+                            <option value="found">Tôi nhặt được món đồ này</option>
+                            <option value="lost">Tôi đã mất món đồ này</option>
+                        </select>
+                    </div>
+                    <div class="input-group full-width">
+                        <label>Mô tả chung *</label>
+                        <textarea name="description" required rows="3"
+                            placeholder="Thông tin công khai: màu sắc, nhãn hiệu, v.v."></textarea>
+                    </div>
+                    <div class="input-group">
+                        <label>Mã định danh / Số phòng</label>
+                        <input type="text" name="identifier" placeholder="VD: P203, SV129">
+                    </div>
+                    <div class="input-group">
+                        <label>Khu vực</label>
+                        <input type="text" name="area" placeholder="VD: Thư viện, Quán Cafe">
+                    </div>
+                    <div class="input-group">
+                        <label>Ngày xảy ra *</label>
+                        <input type="date" name="incident_date" required id="incidentDateInput">
+                    </div>
+                    <div class="input-group">
+                        <label>Ngày hết hạn</label>
+                        <input type="date" name="expiry_date">
+                    </div>
+                    <div class="input-group full-width file-upload">
+                        <label>Bằng chứng hình ảnh (Ảnh)</label>
+                        <div class="file-drop-area">
+                            <i class='bx bx-cloud-upload'></i>
+                            <p>Tải ảnh món đồ lên</p>
+                            <input type="file" name="attachment" accept="image/*">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-outline" onclick="closeModal('reportModal')">Hủy</button>
+                    <button type="submit" class="btn btn-primary">Đăng bài</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Engage Item Modal (Claiming or Finding) -->
+    <div class="modal overlay" id="engageModal">
+        <div class="modal-content glass-panel" style="max-width: 500px;">
+            <div class="modal-header">
+                <h2 id="engageModalTitle"><i class='bx bx-check-shield'></i> Tham gia xác minh</h2>
+                <button class="close-btn" onclick="closeModal('engageModal')"><i class='bx bx-x'></i></button>
+            </div>
+            <p id="engageModalDesc" style="margin-bottom: 1.5rem; color: var(--text-muted);"></p>
+            <form id="engageForm">
+                <input type="hidden" id="engageItemId">
+                <div class="input-group full-width">
+                    <label id="engageModalLabel">Chi tiết *</label>
+                    <textarea name="secret_details" required rows="4"
+                        placeholder="Hãy miêu tả chi tiết nhất có thể..."></textarea>
+                </div>
+                <div class="modal-actions mt-3">
+                    <button type="button" class="btn btn-outline" onclick="closeModal('engageModal')">Hủy</button>
+                    <button type="submit" class="btn btn-primary" id="engageSubmitBtn">Xác nhận</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Review Claim Modal (For Finder) -->
+    <div class="modal overlay" id="reviewModal">
+        <div class="modal-content glass-panel" style="max-width: 500px;">
+            <div class="modal-header">
+                <h2><i class='bx bx-search-alt'></i> Xem xét yêu cầu</h2>
+                <button class="close-btn" onclick="closeModal('reviewModal')"><i class='bx bx-x'></i></button>
+            </div>
+            <div class="info-card">
+                <label style="color:var(--primary-color); font-weight:600;">Tên người gửi:</label>
+                <p id="reviewLoserName" style="margin-bottom: 0.5rem;"></p>
+                <label style="color:var(--primary-color); font-weight:600;">Tin nhắn/Bằng chứng được cung cấp:</label>
+                <p id="reviewSecretDetails"
+                    style="font-style: italic; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 5px;"></p>
+            </div>
+            <p>Nếu các chi tiết trên khớp, hãy nhấp vào <b>Xác nhận</b> để hoàn tất việc trao trả.</p>
+            <div class="modal-actions mt-3">
+                <button type="button" class="btn btn-outline" onclick="closeModal('reviewModal')">Từ chối</button>
+                <button type="button" id="confirmClaimBtn" class="btn btn-primary">Xác nhận & Hiện thông tin liên
+                    hệ</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Profile Modal -->
+    <div class="modal overlay" id="profileModal">
+        <div class="modal-content glass-panel" style="max-width: 400px;">
+            <div class="modal-header">
+                <h2><i class='bx bx-user-circle'></i> Hồ sơ của tôi</h2>
+                <button class="close-btn" onclick="closeModal('profileModal')"><i class='bx bx-x'></i></button>
+            </div>
+            <form id="profileForm">
+                <div class="input-group full-width" style="margin-bottom: 1rem;">
+                    <label>Họ và tên</label>
+                    <input type="text" id="profileName" name="full_name">
+                </div>
+                <div class="input-group full-width" style="margin-bottom: 1rem;">
+                    <label>Số điện thoại</label>
+                    <input type="text" id="profilePhone" name="phone">
+                </div>
+                <div class="input-group full-width" style="margin-bottom: 1rem;">
+                    <label>Liên hệ phụ (FB, Zalo, Email)</label>
+                    <input type="text" id="profileContact" name="secondary_contact">
+                </div>
+                <div class="input-group full-width" style="margin-bottom: 1.5rem;">
+                    <label>Mật khẩu mới (Tùy chọn)</label>
+                    <input type="password" id="profilePass" name="password" placeholder="Để trống để giữ nguyên">
+                </div>
+                <div class="modal-actions mt-3">
+                    <button type="button" class="btn btn-outline" onclick="closeModal('profileModal')">Hủy</button>
+                    <button type="submit" class="btn btn-primary">Lưu thay đổi</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast">
+        <i class='bx bx-check-circle'></i>
+        <span id="toastMessage">Thành công</span>
+    </div>
+
+    <script src="/static/js/app.js"></script>
+</body>
+
+</html>
